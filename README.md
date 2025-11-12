@@ -216,4 +216,4 @@ quarkus.datasource.jdbc.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
 
 ---
 
-✨ *Projeto desenvolvido para a disciplina Artificial Intelligence & Chatbot - Sprint 4.*
+✨ Obrigado por conhecer nossa solução!
