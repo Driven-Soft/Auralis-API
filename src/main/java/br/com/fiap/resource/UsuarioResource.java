@@ -1,5 +1,6 @@
 package br.com.fiap.resource;
 
+import br.com.fiap.DTO.LoginDTO;
 import br.com.fiap.business.UsuarioBusiness;
 import br.com.fiap.model.Usuario;
 import jakarta.ws.rs.*;
@@ -50,6 +51,14 @@ public class UsuarioResource {
                     .entity("Erro ao criar usuário: " + e.getMessage())
                     .build();
         }
+    }
+
+    @POST
+    @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Usuario login(LoginDTO dto) {
+        return business.login(dto);
     }
 
     @PUT

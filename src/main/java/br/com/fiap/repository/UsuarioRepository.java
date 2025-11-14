@@ -168,4 +168,42 @@ public class UsuarioRepository {
             throw new RuntimeException("Erro ao deletar usuário", e);
         }
     }
+
+    // LOGIN
+    public Usuario buscarPorEmailESenha(String email, String senha) {
+        String sql = "SELECT * FROM auralis_usuarios WHERE email = ? AND senha = ?";
+
+        try (Connection conn = factory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, senha);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Usuario u = new Usuario();
+                u.setIdUsuario(rs.getLong("id_usuario"));
+                u.setNome(rs.getString("nome_usuario"));
+                u.setEmail(rs.getString("email"));
+                u.setSenha(rs.getString("senha"));
+                u.setGenero(rs.getString("genero"));
+
+                Date nascimento = rs.getDate("data_nascimento");
+                if (nascimento != null) {
+                    u.setNascimento(nascimento.toLocalDate());
+                }
+
+                Timestamp dataCadastro = rs.getTimestamp("data_cadastro");
+                if (dataCadastro != null) {
+                    u.setDataCadastro(dataCadastro.toLocalDateTime());
+                }
+                return u;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

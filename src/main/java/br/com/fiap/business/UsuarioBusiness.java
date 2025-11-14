@@ -1,5 +1,6 @@
 package br.com.fiap.business;
 
+import br.com.fiap.DTO.LoginDTO;
 import br.com.fiap.model.Usuario;
 import br.com.fiap.repository.UsuarioRepository;
 
@@ -24,6 +25,16 @@ public class UsuarioBusiness {
         }
 
         repository.salvarUsuario(usuario);
+    }
+
+    public Usuario login(LoginDTO dto) {
+        Usuario usuario = repository.buscarPorEmailESenha(dto.email, dto.senha);
+
+        if (usuario == null) {
+            throw new RuntimeException("Email ou senha inválidos");
+        }
+
+        return usuario;
     }
 
     // Listar todos

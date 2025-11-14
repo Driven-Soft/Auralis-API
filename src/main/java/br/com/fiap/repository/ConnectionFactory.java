@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
 
-    private String user = "rm565119";
-    private String pwd = "201106";
+    private String user = "rm564723";
+    private String pwd = "200706";
     private String jdbc = "jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl";
 
     public ConnectionFactory() {
