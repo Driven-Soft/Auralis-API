@@ -190,4 +190,56 @@ public class RegistroRepository {
             throw new RuntimeException("Erro ao deletar registro", e);
         }
     }
+
+    // LISTAR ÚLTIMOS REGISTROS DE UM USUÁRIO (7)
+    public List<Registro> listarUltimosPorUsuario(Long idUsuario, int limit) {
+        List<Registro> registros = new ArrayList<>();
+        String sql = """
+            SELECT ID_REGISTRO, ID_USUARIO, HIDRATACAO_ML, TEMPO_SOL_MIN, NIVEL_ESTRESSE, SONO_HORAS, 
+                   TEMPO_TELA_HORAS, TRABALHO_HORAS, ATIVIDADE_FISICA_MIN, SCORE, DATA_REGISTRO 
+            FROM (
+                SELECT ID_REGISTRO, ID_USUARIO, HIDRATACAO_ML, TEMPO_SOL_MIN, NIVEL_ESTRESSE, SONO_HORAS, 
+                       TEMPO_TELA_HORAS, TRABALHO_HORAS, ATIVIDADE_FISICA_MIN, SCORE, DATA_REGISTRO 
+                FROM AURALIS_REGISTROS
+                WHERE ID_USUARIO = ?
+                ORDER BY DATA_REGISTRO DESC
+            )
+            WHERE ROWNUM <= ?
+        """;
+
+        try (Connection conn = factory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, idUsuario);
+            ps.setInt(2, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Registro r = new Registro();
+                    r.setIdRegistro(rs.getLong("id_registro"));
+                    r.setIdUsuario(rs.getLong("id_usuario"));
+                    r.setHidratacao(rs.getInt("hidratacao_ml"));
+                    r.setTempo_sol(rs.getInt("tempo_sol_min"));
+                    r.setNivel_estresse(rs.getInt("nivel_estresse"));
+                    r.setSono(rs.getFloat("sono_horas"));
+                    r.setTempo_tela(rs.getFloat("tempo_tela_horas"));
+                    r.setTrabalho_horas(rs.getFloat("trabalho_horas"));
+                    r.setAtividade_fisica(rs.getInt("atividade_fisica_min"));
+                    r.setScore(rs.getInt("score"));
+
+                    Timestamp data = rs.getTimestamp("data_registro");
+                    if (data != null) {
+                        r.setDataRegistro(data.toLocalDateTime());
+                    }
+
+                    registros.add(r);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao listar últimos registros do usuário", e);
+        }
+
+        return registros;
+    }
 }

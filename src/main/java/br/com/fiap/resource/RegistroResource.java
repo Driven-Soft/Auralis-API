@@ -49,6 +49,18 @@ public class RegistroResource {
         }
     }
 
+    // Listar últimos 7 registros de um usuário
+    @GET
+    @Path("/usuario/{id}/semana")
+    public Response ultimos7PorUsuario(@PathParam("id") Long id) {
+        try {
+            List<Registro> registros = business.listarUltimosPorUsuario(id, 7);
+            return Response.ok(registros).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
+    }
+
     // Atualizar registro
     @PUT
     @Path("/{id}")

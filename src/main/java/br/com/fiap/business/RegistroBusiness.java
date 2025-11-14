@@ -54,4 +54,17 @@ public class RegistroBusiness {
 
         repository.deletarRegistro(id);
     }
+
+    // Listar últimos registros de um usuário com limite
+    public List<Registro> listarUltimosPorUsuario(Long idUsuario, int limit) {
+        if (idUsuario == null || idUsuario <= 0) {
+            throw new IllegalArgumentException("ID do usuário inválido.");
+        }
+
+        if (limit <= 0) {
+            limit = 7;
+        }
+
+        return repository.listarUltimosPorUsuario(idUsuario, limit);
+    }
 }

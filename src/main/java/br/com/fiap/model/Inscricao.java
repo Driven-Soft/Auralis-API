@@ -1,7 +1,4 @@
 package br.com.fiap.model;
-
-import org.jboss.resteasy.reactive.server.handlers.PerRequestInstanceHandler;
-
 import java.time.LocalDateTime;
 
 public class Inscricao {
