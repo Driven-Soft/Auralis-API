@@ -8,6 +8,7 @@ public class Usuario {
     private String nome;
     private String email;
     private String senha;
+    private String telefone;
     private String genero;
     private LocalDate nascimento;
     private LocalDateTime dataCadastro;
@@ -15,11 +16,12 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(long idUsuario, String nome, String email, String senha, String genero, LocalDate nascimento, LocalDateTime dataCadastro) {
+    public Usuario(long idUsuario, String nome, String email, String senha, String telefone, String genero, LocalDate nascimento, LocalDateTime dataCadastro) {
         this.idUsuario = idUsuario;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
+        this.telefone = telefone;
         this.genero = genero;
         this.nascimento = nascimento;
         this.dataCadastro = dataCadastro;
@@ -57,6 +59,14 @@ public class Usuario {
         this.senha = senha;
     }
 
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
     public String getGenero() {
         return genero;
     }
@@ -88,6 +98,7 @@ public class Usuario {
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
                 ", senha='" + senha + '\'' +
+                ", telefone='" + telefone + '\'' +
                 ", genero='" + genero + '\'' +
                 ", nascimento=" + nascimento +
                 ", dataCadastro=" + dataCadastro +

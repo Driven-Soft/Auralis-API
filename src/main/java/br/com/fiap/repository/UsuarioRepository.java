@@ -13,7 +13,7 @@ public class UsuarioRepository {
 
     // INSERIR USUÁRIO
     public void salvarUsuario(Usuario usuario) {
-        String sql = "INSERT INTO AURALIS_USUARIOS (NOME_USUARIO, EMAIL, SENHA, GENERO, DATA_NASCIMENTO, DATA_CADASTRO) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO AURALIS_USUARIOS (NOME_USUARIO, EMAIL, SENHA, TELEFONE, GENERO, DATA_NASCIMENTO, DATA_CADASTRO) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = factory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -21,18 +21,19 @@ public class UsuarioRepository {
             ps.setString(1, usuario.getNome());
             ps.setString(2, usuario.getEmail());
             ps.setString(3, usuario.getSenha());
-            ps.setString(4, usuario.getGenero());
+            ps.setString(4, usuario.getTelefone());
+            ps.setString(5, usuario.getGenero());
 
             if (usuario.getNascimento() != null) {
-                ps.setDate(5, Date.valueOf(usuario.getNascimento()));
+                ps.setDate(6, Date.valueOf(usuario.getNascimento()));
             } else {
-                ps.setNull(5, Types.DATE);
+                ps.setNull(6, Types.DATE);
             }
 
             if (usuario.getDataCadastro() != null) {
-                ps.setTimestamp(6, Timestamp.valueOf(usuario.getDataCadastro()));
+                ps.setTimestamp(7, Timestamp.valueOf(usuario.getDataCadastro()));
             } else {
-                ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
             }
 
             ps.executeUpdate();
@@ -46,7 +47,7 @@ public class UsuarioRepository {
     // LISTAR TODOS
     public List<Usuario> listarTodos() {
         List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT ID_USUARIO, NOME_USUARIO, EMAIL, SENHA, GENERO, DATA_NASCIMENTO, DATA_CADASTRO FROM AURALIS_USUARIOS";
+        String sql = "SELECT ID_USUARIO, NOME_USUARIO, EMAIL, SENHA, TELEFONE, GENERO, DATA_NASCIMENTO, DATA_CADASTRO FROM AURALIS_USUARIOS";
 
         try (Connection conn = factory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -58,6 +59,7 @@ public class UsuarioRepository {
                 u.setNome(rs.getString("nome_usuario"));
                 u.setEmail(rs.getString("email"));
                 u.setSenha(rs.getString("senha"));
+                u.setTelefone(rs.getString("telefone"));
                 u.setGenero(rs.getString("genero"));
 
                 Date nascimento = rs.getDate("data_nascimento");
@@ -82,7 +84,7 @@ public class UsuarioRepository {
 
     // BUSCAR POR ID
     public Usuario buscarPorId(Long id) {
-        String sql = "SELECT ID_USUARIO, NOME_USUARIO, EMAIL, SENHA, GENERO, DATA_NASCIMENTO, DATA_CADASTRO FROM AURALIS_USUARIOS WHERE ID_USUARIO = ?";
+        String sql = "SELECT ID_USUARIO, NOME_USUARIO, EMAIL, SENHA, TELEFONE, GENERO, DATA_NASCIMENTO, DATA_CADASTRO FROM AURALIS_USUARIOS WHERE ID_USUARIO = ?";
 
         try (Connection conn = factory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -96,6 +98,7 @@ public class UsuarioRepository {
                     u.setNome(rs.getString("nome_usuario"));
                     u.setEmail(rs.getString("email"));
                     u.setSenha(rs.getString("senha"));
+                    u.setTelefone(rs.getString("telefone"));
                     u.setGenero(rs.getString("genero"));
 
                     Date nascimento = rs.getDate("data_nascimento");
@@ -121,7 +124,7 @@ public class UsuarioRepository {
 
     // ATUALIZAR USUÁRIO
     public void atualizarUsuario(Usuario usuario) {
-        String sql = "UPDATE AURALIS_USUARIOS SET NOME_USUARIO = ?, EMAIL = ?, SENHA = ?, GENERO = ?, DATA_NASCIMENTO = ? WHERE ID_USUARIO = ?";
+        String sql = "UPDATE AURALIS_USUARIOS SET NOME_USUARIO = ?, EMAIL = ?, SENHA = ?, TELEFONE = ?, GENERO = ?, DATA_NASCIMENTO = ? WHERE ID_USUARIO = ?";
 
         try (Connection conn = factory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -129,15 +132,16 @@ public class UsuarioRepository {
             ps.setString(1, usuario.getNome());
             ps.setString(2, usuario.getEmail());
             ps.setString(3, usuario.getSenha());
-            ps.setString(4, usuario.getGenero());
+            ps.setString(4, usuario.getTelefone());
+            ps.setString(5, usuario.getGenero());
 
             if (usuario.getNascimento() != null) {
-                ps.setDate(5, Date.valueOf(usuario.getNascimento()));
+                ps.setDate(6, Date.valueOf(usuario.getNascimento()));
             } else {
-                ps.setNull(5, Types.DATE);
+                ps.setNull(6, Types.DATE);
             }
 
-            ps.setLong(6, usuario.getIdUsuario());
+            ps.setLong(7, usuario.getIdUsuario());
 
             int rows = ps.executeUpdate();
 
@@ -187,6 +191,7 @@ public class UsuarioRepository {
                 u.setNome(rs.getString("nome_usuario"));
                 u.setEmail(rs.getString("email"));
                 u.setSenha(rs.getString("senha"));
+                u.setTelefone(rs.getString("telefone"));
                 u.setGenero(rs.getString("genero"));
 
                 Date nascimento = rs.getDate("data_nascimento");
