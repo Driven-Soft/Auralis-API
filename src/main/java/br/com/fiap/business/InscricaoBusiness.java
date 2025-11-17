@@ -27,6 +27,19 @@ public class InscricaoBusiness {
             inscricao.setStatus("A"); // default (A = Ativa)
         }
 
+        // checar se já existe inscrição para este usuário
+        br.com.fiap.model.Inscricao existente = repository.buscarPorUsuario(inscricao.getIdUsuario());
+        if (existente != null) {
+            String status = existente.getStatus();
+            if ("A".equalsIgnoreCase(status)) {
+                throw new IllegalStateException("Usuário já possui uma inscrição ativa.");
+            } else if ("I".equalsIgnoreCase(status)) {
+                throw new IllegalArgumentException("Usuário possui uma inscrição inativa.");
+            } else {
+                throw new IllegalStateException("Usuário já possui uma inscrição com status: " + status);
+            }
+        }
+
         repository.salvarInscricao(inscricao);
     }
 
@@ -47,7 +60,35 @@ public class InscricaoBusiness {
     // Atualizar
     public void atualizarInscricao(Long id, Inscricao inscricao) {
         Inscricao existente = buscarPorId(id); // valida se existe
+
+        // garantir que o id da inscrição esteja correto
         inscricao.setIdInscricao(existente.getIdInscricao());
+
+        // preservar campos existentes caso não tenham sido fornecidos
+        if (inscricao.getIdUsuario() <= 0) {
+            inscricao.setIdUsuario(existente.getIdUsuario());
+        }
+
+        if (inscricao.getWhatsapp() == null || inscricao.getWhatsapp().isBlank()) {
+            inscricao.setWhatsapp(existente.getWhatsapp());
+        }
+
+        if (inscricao.getEmail() == null || inscricao.getEmail().isBlank()) {
+            inscricao.setEmail(existente.getEmail());
+        }
+
+        if (inscricao.getDataInscricao() == null) {
+            inscricao.setDataInscricao(existente.getDataInscricao());
+        }
+
+        // alternar o status: se estava 'A' -> vira 'I', se estava 'I' -> vira 'A'
+        String statusExistente = existente.getStatus();
+        if ("A".equalsIgnoreCase(statusExistente)) {
+            inscricao.setStatus("I");
+        } else {
+            inscricao.setStatus("A");
+        }
+
         repository.atualizarInscricao(inscricao);
     }
 

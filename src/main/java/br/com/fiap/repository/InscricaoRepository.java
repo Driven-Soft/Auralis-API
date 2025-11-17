@@ -38,6 +38,20 @@ public class InscricaoRepository {
         }
     }
 
+    // verifica se já existe inscrição ativa para um usuário
+    public boolean existeInscricaoAtivaParaUsuario(long idUsuario) {
+        String sql = "SELECT 1 FROM AURALIS_INSCRICOES WHERE ID_USUARIO = ? AND STATUS = 'A' AND ROWNUM = 1";
+        try (Connection conn = factory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao checar inscrição ativa", e);
+        }
+    }
+
     // LISTAR TODAS
     public List<Inscricao> listarTodos() {
         List<Inscricao> inscricoes = new ArrayList<>();
@@ -101,6 +115,41 @@ public class InscricaoRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao buscar inscrição por ID", e);
+        }
+
+        return null;
+    }
+
+    // BUSCAR POR ID DO USUÁRIO (retorna a inscrição mais recente do usuário, se houver)
+    public Inscricao buscarPorUsuario(long idUsuario) {
+        String sql = "SELECT ID_INSCRICAO, ID_USUARIO, RECEBE_WHATSAPP, RECEBE_EMAIL, DATA_INSCRICAO, STATUS FROM (SELECT ID_INSCRICAO, ID_USUARIO, RECEBE_WHATSAPP, RECEBE_EMAIL, DATA_INSCRICAO, STATUS FROM AURALIS_INSCRICOES WHERE ID_USUARIO = ? ORDER BY DATA_INSCRICAO DESC) WHERE ROWNUM = 1";
+
+        try (Connection conn = factory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, idUsuario);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Inscricao i = new Inscricao();
+                    i.setIdInscricao(rs.getLong("ID_INSCRICAO"));
+                    i.setIdUsuario(rs.getLong("ID_USUARIO"));
+                    i.setWhatsapp(rs.getString("RECEBE_WHATSAPP"));
+                    i.setEmail(rs.getString("RECEBE_EMAIL"));
+
+                    Timestamp ts = rs.getTimestamp("DATA_INSCRICAO");
+                    if (ts != null) {
+                        i.setDataInscricao(ts.toLocalDateTime());
+                    }
+
+                    i.setStatus(rs.getString("STATUS"));
+
+                    return i;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar inscrição por usuário", e);
         }
 
         return null;
