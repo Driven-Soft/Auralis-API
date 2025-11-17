@@ -19,8 +19,8 @@ public class RegistroRepository {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (Connection conn = factory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+           try (Connection conn = factory.getConnection();
+               PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID_REGISTRO"})) {
 
             ps.setLong(1, registro.getIdUsuario());
             ps.setInt(2, registro.getHidratacao());
@@ -32,13 +32,50 @@ public class RegistroRepository {
             ps.setInt(8, registro.getAtividade_fisica());
             ps.setInt(9, registro.getScore());
 
+            Timestamp timestampToUse;
             if (registro.getDataRegistro() != null) {
-                ps.setTimestamp(10, Timestamp.valueOf(registro.getDataRegistro()));
+                timestampToUse = Timestamp.valueOf(registro.getDataRegistro());
+                ps.setTimestamp(10, timestampToUse);
             } else {
-                ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
+                timestampToUse = Timestamp.valueOf(LocalDateTime.now());
+                ps.setTimestamp(10, timestampToUse);
+                // also set back to model so callers can rely on it
+                registro.setDataRegistro(timestampToUse.toLocalDateTime());
             }
 
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            // Recuperar ID gerado pelo banco e setar no objeto registro
+            boolean idSet = false;
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys != null && generatedKeys.next()) {
+                    long generatedId = generatedKeys.getLong(1);
+                    registro.setIdRegistro(generatedId);
+                    idSet = true;
+                }
+            } catch (SQLException e) {
+                // Some Oracle setups may fail to return generated keys this way (ORA-17132).
+                // We'll fallback to a safe query below.
+            }
+
+            if (!idSet) {
+                // Fallback: try to find the inserted ID by matching user and timestamp
+                String findSql = "SELECT ID_REGISTRO FROM (SELECT ID_REGISTRO FROM AURALIS_REGISTROS WHERE ID_USUARIO = ? AND DATA_REGISTRO = ? ORDER BY ID_REGISTRO DESC) WHERE ROWNUM = 1";
+                try (PreparedStatement findPs = conn.prepareStatement(findSql)) {
+                    findPs.setLong(1, registro.getIdUsuario());
+                    findPs.setTimestamp(2, timestampToUse);
+                    try (ResultSet rs = findPs.executeQuery()) {
+                        if (rs.next()) {
+                            registro.setIdRegistro(rs.getLong("id_registro"));
+                            idSet = true;
+                        }
+                    }
+                }
+            }
+
+            if (rows == 0 || !idSet) {
+                throw new RuntimeException("Falha ao inserir registro, nenhuma linha afetada ou id não recuperado.");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();

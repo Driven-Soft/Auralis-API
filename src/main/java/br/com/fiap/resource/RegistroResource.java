@@ -5,6 +5,8 @@ import br.com.fiap.model.Registro;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.net.URI;
+import java.util.Map;
 
 import java.util.List;
 
@@ -20,7 +22,9 @@ public class RegistroResource {
     public Response criarRegistro(Registro registro) {
         try {
             business.salvarRegistro(registro);
-            return Response.status(Response.Status.CREATED).entity("Registro criado com sucesso!").build();
+            Long id = registro.getIdRegistro();
+            URI location = URI.create("/registros/" + id);
+            return Response.created(location).entity(Map.of("id", id)).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
