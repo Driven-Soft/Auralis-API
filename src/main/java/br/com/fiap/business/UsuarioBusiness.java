@@ -10,7 +10,6 @@ public class UsuarioBusiness {
 
     private UsuarioRepository repository = new UsuarioRepository();
 
-    // Criar novo usuário com validação
     public void criarUsuario(Usuario usuario) {
         if (usuario.getNome() == null || usuario.getNome().isBlank()) {
             throw new IllegalArgumentException("O nome do usuário é obrigatório.");
@@ -53,14 +52,14 @@ public class UsuarioBusiness {
 
     // Atualizar
     public void atualizarUsuario(Long id, Usuario usuario) {
-        Usuario existente = buscarPorId(id); // valida se existe
+        Usuario existente = buscarPorId(id);
         usuario.setIdUsuario(existente.getIdUsuario());
         repository.atualizarUsuario(usuario);
     }
 
     // Deletar
     public void deletarUsuario(Long id) {
-        buscarPorId(id); // valida se existe
+        buscarPorId(id);
         repository.deletarUsuario(id);
     }
 }

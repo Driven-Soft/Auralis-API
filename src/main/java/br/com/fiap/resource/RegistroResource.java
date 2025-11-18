@@ -26,6 +26,10 @@ public class RegistroResource {
             URI location = URI.create("/registros/" + id);
             return Response.created(location).entity(Map.of("id", id)).build();
         } catch (Exception e) {
+            // Se já existe registro hoje, retornar código específico (409) para o front tratar
+            if (e.getMessage() != null && e.getMessage().contains("REGISTRO_JA_REALIZADO_HOJE")) {
+                return Response.status(Response.Status.CONFLICT).entity("REGISTRO_JA_REALIZADO_HOJE").build();
+            }
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }

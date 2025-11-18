@@ -19,8 +19,25 @@ public class RegistroRepository {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-           try (Connection conn = factory.getConnection();
-               PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID_REGISTRO"})) {
+        // verificar se já existe registro do usuário na mesma data (um por dia)
+        java.time.LocalDateTime dataParaChecar = registro.getDataRegistro() != null ? registro.getDataRegistro() : java.time.LocalDateTime.now();
+        String existsSql = "SELECT 1 FROM AURALIS_REGISTROS WHERE ID_USUARIO = ? AND TRUNC(DATA_REGISTRO) = TRUNC(?) AND ROWNUM = 1";
+        try (Connection conn = factory.getConnection();
+             PreparedStatement existsPs = conn.prepareStatement(existsSql)) {
+
+            existsPs.setLong(1, registro.getIdUsuario());
+            existsPs.setTimestamp(2, Timestamp.valueOf(dataParaChecar));
+            try (ResultSet rs = existsPs.executeQuery()) {
+                if (rs.next()) {
+                    throw new RuntimeException("REGISTRO_JA_REALIZADO_HOJE");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao verificar existência de registro", e);
+        }
+
+        try (Connection conn = factory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID_REGISTRO"})) {
 
             ps.setLong(1, registro.getIdUsuario());
             ps.setInt(2, registro.getHidratacao());
@@ -39,13 +56,11 @@ public class RegistroRepository {
             } else {
                 timestampToUse = Timestamp.valueOf(LocalDateTime.now());
                 ps.setTimestamp(10, timestampToUse);
-                // also set back to model so callers can rely on it
                 registro.setDataRegistro(timestampToUse.toLocalDateTime());
             }
 
             int rows = ps.executeUpdate();
 
-            // Recuperar ID gerado pelo banco e setar no objeto registro
             boolean idSet = false;
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys != null && generatedKeys.next()) {
@@ -54,12 +69,9 @@ public class RegistroRepository {
                     idSet = true;
                 }
             } catch (SQLException e) {
-                // Some Oracle setups may fail to return generated keys this way (ORA-17132).
-                // We'll fallback to a safe query below.
             }
 
             if (!idSet) {
-                // Fallback: try to find the inserted ID by matching user and timestamp
                 String findSql = "SELECT ID_REGISTRO FROM (SELECT ID_REGISTRO FROM AURALIS_REGISTROS WHERE ID_USUARIO = ? AND DATA_REGISTRO = ? ORDER BY ID_REGISTRO DESC) WHERE ROWNUM = 1";
                 try (PreparedStatement findPs = conn.prepareStatement(findSql)) {
                     findPs.setLong(1, registro.getIdUsuario());

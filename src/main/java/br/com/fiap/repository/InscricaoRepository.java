@@ -38,7 +38,6 @@ public class InscricaoRepository {
         }
     }
 
-    // verifica se já existe inscrição ativa para um usuário
     public boolean existeInscricaoAtivaParaUsuario(long idUsuario) {
         String sql = "SELECT 1 FROM AURALIS_INSCRICOES WHERE ID_USUARIO = ? AND STATUS = 'A' AND ROWNUM = 1";
         try (Connection conn = factory.getConnection();

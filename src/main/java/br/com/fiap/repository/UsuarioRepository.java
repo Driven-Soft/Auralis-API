@@ -39,7 +39,7 @@ public class UsuarioRepository {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace(); // <-- imprime a causa real no console
+            e.printStackTrace();
             throw new RuntimeException("Erro ao salvar usuário: " + e.getMessage(), e);
         }
     }
