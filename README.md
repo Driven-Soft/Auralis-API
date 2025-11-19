@@ -1,4 +1,4 @@
-# 🌙 Auralis API - Global Solution
+# 🌙 Auralis API - `Global Solution 2025/2`
 
 Bem-vindo(a) à **Auralis API**, o backend oficial do projeto Auralis
 
@@ -10,10 +10,11 @@ Este sistema foi desenvolvido para apoiar o **Auralis**, uma aplicação voltada
 
 Criar uma **API REST** confiável, utilizando **Quarkus + Java + Oracle JDBC**, capaz de:
 
-- Registrar dados de rotina e saúde dos usuários  
-- Armazenar feedbacks sobre a experiência de uso  
-- Gerenciar inscrições em notificações e lembretes  
-- Integrar-se ao **Front-End Auralis** de forma segura e performática  
+- Cadastrar novos usuários na plataforma
+- Registrar dados de rotina e saúde dos usuários
+- Armazenar feedbacks sobre a experiência de uso
+- Gerenciar inscrições em notificações e lembretes
+- Integrar-se ao **Front-End Auralis** de forma segura e performática
 
 ---
 
@@ -34,23 +35,27 @@ src/main/java/br/com/fiap/
 │   └── InscricaoBusiness.java
 │
 ├── repository/         # Persistência Oracle via JDBC
+│   ├── ConnectionFactory.java
 │   ├── UsuarioRepository.java
 │   ├── RegistroRepository.java
 │   ├── FeedbackRepository.java
 │   └── InscricaoRepository.java
 │
-├── model/              # Entidades e DTOs
+├── model/              # Entidades
 │   ├── Usuario.java
 │   ├── Registro.java
 │   ├── Feedback.java
 │   └── Inscricao.java
+│
+└── DTO/                # DTOs
+    └── LoginDTO.java
 ```
 
 ---
 
 ## 🌐 Recursos da API
 
-Todos os endpoints utilizam **RESTEasy (JAX-RS)** com **respostas em JSON (Jackson)**.  
+Todos os endpoints utilizam **REST Jackson** com **respostas em JSON (Jackson)**.
 Cada `Resource` se comunica com a camada `Business` para validação, e esta por sua vez chama o `Repository` para persistência no Oracle.
 
 ---
@@ -59,21 +64,27 @@ Cada `Resource` se comunica com a camada `Business` para validação, e esta por
 
 > Gerencia os registros diários de saúde dos usuários.
 
-📌 **Endpoints:**
-- `POST /registros` → cria um novo registro  
-- `GET /registros` → retorna todos os registros  
-- `GET /registros/{id}` → busca um registro por ID  
+## 📌 **Endpoints:**
+| Método | URI                | Descrição                        | Status Esperados         |
+|--------|--------------------|----------------------------------|-------------------------|
+| GET    | /registros         | Lista todos os registros          | 200, 500                |
+| GET    | /registros/{id}    | Busca registro por ID             | 200, 404, 500           |
+| POST   | /registros         | Cria novo registro                | 201, 400, 409, 500      |
+| PUT    | /registros/{id}    | Atualiza registro existente       | 200, 400, 404, 500      |
+| DELETE | /registros/{id}    | Remove registro por ID            | 204, 404, 500           |
+
 
 ✔ **Campos esperados:**
 ```json
 {
+  "idRegistro": 1,
   "idUsuario": 13,
   "hidratacao": 2500,
   "tempo_sol": 45,
   "nivel_estresse": 3,
   "sono": 7.5,
   "tempo_tela": 5.2,
-  "trabalho_horas": 8,
+  "trabalho_horas": 8.0,
   "atividade_fisica": 60,
   "score": 85,
   "dataRegistro": "2025-11-12T10:00:00"
@@ -86,13 +97,20 @@ Cada `Resource` se comunica com a camada `Business` para validação, e esta por
 
 > Armazena feedbacks de usuários sobre o sistema Auralis.
 
-📌 **Endpoints:**
-- `POST /feedbacks` → grava um novo feedback  
-- `GET /feedbacks` → lista todos os feedbacks  
+## 📌 **Endpoints:**
+| Método | URI                | Descrição                    | Status Esperados         |
+|--------|--------------------|-----------------------------|-------------------------|
+| GET    | /feedbacks         | Lista todos os feedbacks     | 200, 500                |
+| GET    | /feedbacks/{id}    | Busca feedback por ID        | 200, 404, 500           |
+| POST   | /feedbacks         | Cria novo feedback           | 201, 400, 500           |
+| PUT    | /feedbacks/{id}    | Atualiza feedback existente  | 200, 400, 404, 500      |
+| DELETE | /feedbacks/{id}    | Remove feedback por ID       | 204, 404, 500           |
+
 
 ✔ **Campos esperados:**
 ```json
 {
+  "idFeedback": 1,
   "idUsuario": 3,
   "mensagem": "O atendimento foi excelente! Sistema rápido e fácil de usar.",
   "nota": 5,
@@ -105,18 +123,26 @@ Cada `Resource` se comunica com a camada `Business` para validação, e esta por
 
 > Gerencia cadastro de usuários.
 
-📌 **Endpoints:**
-- `POST /usuarios` → cadastra novo usuário 
-- `GET /usuarios` → lista todos os usuários existentes  
+## 📌 **Endpoints:**
+| Método | URI                | Descrição                        | Status Esperados         |
+|--------|--------------------|----------------------------------|-------------------------|
+| GET    | /usuarios          | Lista todos os usuários           | 200, 500                |
+| GET    | /usuarios/{id}     | Busca usuário por ID              | 200, 404, 500           |
+| POST   | /usuarios          | Cria novo usuário                 | 201, 400, 500           |
+| PUT    | /usuarios/{id}     | Atualiza usuário existente        | 200, 400, 404, 500      |
+| DELETE | /usuarios/{id}     | Remove usuário por ID             | 204, 404, 500           |
 
 ✔ **Campos esperados:**
 ```json
 {
+  "idUsuario": 13,
   "nome": "Henrique Cunha",
   "email": "henrique@email.com",
   "senha": "1234",
+  "telefone": "11999999999",
   "genero": "M",
-  "nascimento": "2002-03-15"
+  "nascimento": "2002-03-15",
+  "dataCadastro": "2025-11-12T09:00:00"
 }
 ```
 
@@ -126,19 +152,37 @@ Cada `Resource` se comunica com a camada `Business` para validação, e esta por
 
 > Gerencia inscrições para notificações, lembretes e atualizações.
 
-📌 **Endpoints:**
-- `POST /inscricoes` → cadastra novo inscrito  
-- `GET /inscricoes` → lista inscrições existentes  
+## 📌 **Endpoints:**
+| Método | URI                | Descrição                        | Status Esperados         |
+|--------|--------------------|----------------------------------|-------------------------|
+| GET    | /inscricoes        | Lista todas as inscrições         | 200, 500                |
+| GET    | /inscricoes/{id}   | Busca inscrição por ID            | 200, 404, 500           |
+| POST   | /inscricoes        | Cria nova inscrição               | 201, 400, 409, 500      |
+| PUT    | /inscricoes/{id}   | Atualiza inscrição existente      | 200, 400, 404, 500      |
+| DELETE | /inscricoes/{id}   | Remove inscrição por ID           | 204, 404, 500           |
 
 ✔ **Campos esperados:**
 ```json
 {
+  "idInscricao": 1,
   "idUsuario": 13,
   "whatsapp": "S",
   "email": "S",
+  "dataInscricao": "2025-11-12T09:30:00",
   "status": "A"
 }
 ```
+
+---
+
+### ✅ `CORS`
+
+> Gerencia permissões envolvendo as requisições.
+
+## 📌 **Endpoints:**
+| Método | URI                | Descrição                        | Status Esperados         |
+|--------|--------------------|----------------------------------|-------------------------|
+| Todos  | Todos              | Permite requisições de origens específicas e métodos HTTP na API | 200, 401, 403           |
 
 ---
 
@@ -146,16 +190,16 @@ Cada `Resource` se comunica com a camada `Business` para validação, e esta por
 
 Cada `Business` aplica **validações e regras de negócio**, como:
 
-✔ Verificar se o usuário existe  
-✔ Impedir valores fora dos limites (ex: nível de estresse)  
-✔ Garantir consistência nos dados antes da gravação  
-✔ Retornar mensagens de erro claras em caso de falha  
+✔ Verificar se o usuário existe
+✔ Impedir valores fora dos limites (ex: nível de estresse)
+✔ Garantir consistência nos dados antes da gravação
+✔ Retornar mensagens de erro claras em caso de falha
 
 Fluxo geral:
-1. **Resource** recebe a requisição JSON  
-2. **Business** valida os dados  
-3. **Repository** executa o SQL no Oracle  
-4. Resposta JSON é retornada ao front-end  
+1. **Resource** recebe a requisição JSON
+2. **Business** valida os dados
+3. **Repository** executa o SQL no Oracle
+4. Resposta JSON é retornada ao front-end
 
 ---
 
@@ -176,10 +220,11 @@ http://localhost:8080
 ### ⚙️ Configuração do `application.properties`
 
 ```properties
-quarkus.datasource.db-kind=oracle
-quarkus.datasource.username=RM565119
-quarkus.datasource.password=*****
-quarkus.datasource.jdbc.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+quarkus.http.cors=true
+quarkus.http.cors.origins=https://auralis-gs.vercel.app,http://localhost:5173
+quarkus.http.cors.methods=GET,POST,PUT,DELETE,HEAD,OPTIONS
+quarkus.http.cors.headers=Accept,Authorization,Content-Type,Origin
+quarkus.http.cors.access-control-allow-credentials=false
 ```
 
 ---
@@ -206,13 +251,17 @@ quarkus.datasource.jdbc.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
 
 ---
 
-## 🌐 Repositório da API
+## 🐦‍🔥 Link da API no Render
 
-🔗 [Auralis API](https://github.com/Driven-Soft/Auralis-API)
+🔗 [Render](https://auralis-api.onrender.com/)
 
-## 🌐 Repositório do Front-End
+## 🔥 Repositório do Front-End
 
 🔗 [Auralis](https://github.com/Driven-Soft/Auralis)
+
+## 🎬 Vídeo Pitch do Projeto
+
+🔗 [Pitch](https://www.youtube.com/watch?v=-SazkAV5Uns)
 
 ---
 
